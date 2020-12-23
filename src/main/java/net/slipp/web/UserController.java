@@ -11,8 +11,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Controller
 public class UserController{
 	
-	//회원가입만 사용자를 저장하는 ListCollection
-	///users가 비어있어서
+	//회원가입한 사용자를 저장하는 ListCollection
+	//users will be empty when web server restarts
+	//users=[] b/c the web server was turned off by the command kill -9 process id and is restarted by running jar file inside target
 	private List<User> users=new ArrayList<User>();
 	
 	@PostMapping("/create")
@@ -25,9 +26,11 @@ public class UserController{
 	}
 	
 	@GetMapping("/list")
-	public String list(Model model) {
+	public String list(Model model){
+		
 		model.addAttribute("users",users);
 		return "list";
+		
 	}
 	
 	
