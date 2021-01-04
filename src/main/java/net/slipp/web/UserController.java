@@ -20,7 +20,6 @@ import net.slipp.domain.UserRepository;
 @RequestMapping("/users")
 public class UserController{
 	
-	//private List<User> users=new ArrayList<User>();
 	
 	@Autowired
 	private UserRepository userRepository;
@@ -30,11 +29,9 @@ public class UserController{
 		return "/user/login";
 	}
 	
-	//로그인 기능
 	@PostMapping("/login")
-	public String login(String userId, String password, HttpSession session) {
+	public String login(String userId, String password, HttpSession session){
 	
-		
 		User user=userRepository.findByUserId(userId);
 		System.out.println(user.getPassword());
 		
@@ -43,13 +40,15 @@ public class UserController{
 			return "redirect:/users/loginForm";	
 		}
 		
+		
+		
 		if(!password.equals(user.getPassword())) {
 			System.out.println("Login Failure!");
 			return "redirect:/users/loginForm";
 		}
 		
 		System.out.println("Login success!");
-		session.setAttribute("user",user);
+		session.setAttribute("sessionedUser",user);
 		return "redirect:/";
 		
 		
@@ -57,13 +56,13 @@ public class UserController{
 	
 	@GetMapping("/logout")
 	public String logout(HttpSession session){
-		session.removeAttribute("user");
+		session.removeAttribute("sessionedUser");
 		return "redirect:/";
 	}
 	
 	
 	@GetMapping("/form")
-	public String form() {
+	public String form(){
 		return "/user/form";
 	}
 	
@@ -78,35 +77,50 @@ public class UserController{
 	
 	@GetMapping("")
 	public String list(Model model){
-		
-		//userRepository.findAll() database에 있는 데이터를 담아서 줌
-		//what does userRepository.findAll() returns User objects stored in database
-		
-		//Saving "users":data in database in model 
-		
 		model.addAttribute("users",userRepository.findAll());
 		return "/user/list";
-		
 	}
 	
 	@GetMapping("/{id}/form")
-	public String updateForm(@PathVariable Long id, Model model){
-		model.addAttribute("user",userRepository.findById(id).get());//model={"user":User object}
-															         //model.addAttribute("user",User object)
+	public String updateForm(@PathVariable Long id, Model model,HttpSession session){
 		
+		Object tempUser=session.getAttribute("sessionedUser");
+		
+		if(tempUser==null) {
+			return "redirect:/users/loginForm";
+		}
+		
+		User sessionedUser=(User)tempUser;
+		if(!id.equals(sessionedUser.getId())) {
+			throw new IllegalStateException("자신의 정보만 수정할 수 있습니다.");
+		}
+		
+		model.addAttribute("user",userRepository.findById(id).get()) ;
 		return "/user/updateForm";
 		
 	}
 	
-	//정보를 수정하는 역할
-	//html에서는 http method중: get이랑 post만 사용가능
 	@PutMapping("/{id}")
-	public String update(@PathVariable Long id,User newUser) {
+	public String update(@PathVariable Long id,User updatedUser,HttpSession session) {
+		
+		Object tempUser=session.getAttribute("sessionedUser");
+		
+		
+		//로그인 안되어있으면, 로그인 페이지 보여주기
+		if(tempUser==null) {
+			return "redirect:/users/loginForm";
+		}
+		
+		User sessionedUser=(User)tempUser;
+		if(!id.equals(sessionedUser.getId())) {
+			throw new IllegalStateException("자신의 정보만 수정할 수 있습니다.");
+		}
 		
 		User user=userRepository.findById(id).get();
-		user.update(newUser);
+		user.update(updatedUser);
 		userRepository.save(user);
 		return "redirect:/users";
+		
 		
 	}
 	
