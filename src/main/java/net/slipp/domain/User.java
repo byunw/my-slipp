@@ -12,9 +12,9 @@ public class User {
 	@GeneratedValue
 	private Long id;
 	
+	
 	@Column(nullable=false, length=20,unique=true)
 	private String userId;
-	
 	private String password;
 	private String name;	
 	private String email;
@@ -29,6 +29,27 @@ public class User {
 	
 	public void setPassword(String password){
 		this.password = password;
+	}
+	
+	public boolean matchPassword(String newPassword) {
+		
+		if(newPassword==null) {
+			return false;
+		}
+		
+		return newPassword.equals(password);
+	}
+	
+	public String getUserId(){
+		return userId;
+	}
+	
+	
+	public boolean matchId(Long newId) {
+		if(newId==null) {
+			return false;
+		}
+		return newId.equals(id);
 	}
 	
 	public String getPassword() {

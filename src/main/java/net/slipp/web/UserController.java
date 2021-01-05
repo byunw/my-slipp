@@ -27,29 +27,28 @@ public class UserController{
 	@GetMapping("/loginForm")
 	public String loginForm(){
 		return "/user/login";
+		
 	}
 	
 	@PostMapping("/login")
 	public String login(String userId, String password, HttpSession session){
-	
-		User user=userRepository.findByUserId(userId);
-		System.out.println(user.getPassword());
 		
-		if(user==null) {
+		User user=userRepository.findByUserId(userId);
+		
+		if(user==null){
 			System.out.println("Login Failure!");
 			return "redirect:/users/loginForm";	
 		}
 		
-		
-		
-		if(!password.equals(user.getPassword())) {
+		if(!user.matchPassword(password)){
 			System.out.println("Login Failure!");
 			return "redirect:/users/loginForm";
 		}
 		
 		System.out.println("Login success!");
-		session.setAttribute("sessionedUser",user);
+		session.setAttribute(HttpSessionUtils.USER_SESSION_KEY,user);
 		return "redirect:/";
+		
 		
 		
 	}
@@ -84,14 +83,14 @@ public class UserController{
 	@GetMapping("/{id}/form")
 	public String updateForm(@PathVariable Long id, Model model,HttpSession session){
 		
-		Object tempUser=session.getAttribute("sessionedUser");
 		
-		if(tempUser==null) {
+		if(HttpSessionUtils.isLoginUser(session)) {
 			return "redirect:/users/loginForm";
 		}
 		
-		User sessionedUser=(User)tempUser;
-		if(!id.equals(sessionedUser.getId())) {
+		User sessionedUser=HttpSessionUtils.getUserFromSession(session);
+		
+		if(!(sessionedUser.matchId(id))) {
 			throw new IllegalStateException("자신의 정보만 수정할 수 있습니다.");
 		}
 		
@@ -103,16 +102,12 @@ public class UserController{
 	@PutMapping("/{id}")
 	public String update(@PathVariable Long id,User updatedUser,HttpSession session) {
 		
-		Object tempUser=session.getAttribute("sessionedUser");
-		
-		
-		//로그인 안되어있으면, 로그인 페이지 보여주기
-		if(tempUser==null) {
+		if(HttpSessionUtils.isLoginUser(session)) {
 			return "redirect:/users/loginForm";
 		}
 		
-		User sessionedUser=(User)tempUser;
-		if(!id.equals(sessionedUser.getId())) {
+		User sessionedUser=HttpSessionUtils.getUserFromSession(session);
+		if(!sessionedUser.matchId(id)) {
 			throw new IllegalStateException("자신의 정보만 수정할 수 있습니다.");
 		}
 		
@@ -121,10 +116,7 @@ public class UserController{
 		userRepository.save(user);
 		return "redirect:/users";
 		
-		
 	}
-	
-	
 	
 	
 }
