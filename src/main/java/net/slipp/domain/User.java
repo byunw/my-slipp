@@ -12,7 +12,6 @@ public class User {
 	@GeneratedValue
 	private Long id;
 	
-	
 	@Column(nullable=false, length=20,unique=true)
 	private String userId;
 	private String password;
@@ -23,37 +22,8 @@ public class User {
 		this.userId = userId;
 	}
 	
-	public Long getId() {
-		return id;
-	}
-	
 	public void setPassword(String password){
 		this.password = password;
-	}
-	
-	public boolean matchPassword(String newPassword) {
-		
-		if(newPassword==null) {
-			return false;
-		}
-		
-		return newPassword.equals(password);
-	}
-	
-	public String getUserId(){
-		return userId;
-	}
-	
-	
-	public boolean matchId(Long newId) {
-		if(newId==null) {
-			return false;
-		}
-		return newId.equals(id);
-	}
-	
-	public String getPassword() {
-		return password;
 	}
 	
 	public void setName(String name){
@@ -64,18 +34,89 @@ public class User {
 		this.email = email;
 	}
 	
+	public Long getId() {
+		return id;
+	}
+	
+	//User object한테 일을 시키는게 중요
+	//User object의 데이터를 끄내는거는 나쁨
+	
+	public boolean matchPassword(String newPassword){
+		
+		if(newPassword==null){
+			return false;
+		}
+		
+		return newPassword.equals(password);
+		
+	}
+	
+	public String getUserId(){
+		return userId;
+	}
+	
+	
+	//User object한테 일을 시키는게 중요!
+	public boolean matchId(Long newId) {
+		
+		if(newId==null) {
+			return false;
+		}
+		
+		return newId.equals(id);
+		
+	}
+	
+	public String getPassword(){
+		return password;
+	}
+	
 	@Override
 	public String toString(){
-		return "User [userId="+userId+", password="+password+", name="+name+", email="+email+"]";
+		
+		return userId+" "+password+" "+name+" "+email;
+		
 	}
-
-	public void update(User newUser) {
+	
+	
+	@Override
+	public int hashCode() {
+		
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+		
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		User other = (User) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
+		
+	}
+	
+	public void update(User newUser){
 		
 		this.password=newUser.password;
 		this.name=newUser.name;
 		this.email=newUser.email;
 		
 	}
+	
+	
 	
 	
 }
